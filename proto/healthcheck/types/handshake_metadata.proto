@@ -1,7 +1,7 @@
 syntax = "proto3";
-package healthcheck.healthcheck;
+package healthcheck.types;
 
-option go_package = "healthcheck/x/healthcheck/types";
+option go_package = "healthcheck/x/types";
 
 message HandshakeMetadata {
   

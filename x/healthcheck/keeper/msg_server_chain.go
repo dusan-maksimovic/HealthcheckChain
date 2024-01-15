@@ -3,9 +3,10 @@ package keeper
 import (
 	"context"
 
+	"healthcheck/x/healthcheck/types"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-	"healthcheck/x/healthcheck/types"
 )
 
 func (k msgServer) CreateChain(goCtx context.Context, msg *types.MsgCreateChain) (*types.MsgCreateChainResponse, error) {
