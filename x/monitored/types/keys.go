@@ -14,10 +14,14 @@ const (
 	MemStoreKey = "mem_monitored"
 
 	// Version defines the current version the IBC module supports
-	Version = "monitored-1"
+	Version = "1"
 
 	// PortID is the default port id that module binds to
 	PortID = "monitored"
+
+	UpdateInterval = 10
+
+	TimeoutInterval = 20
 )
 
 var (

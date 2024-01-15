@@ -3,6 +3,10 @@ package monitored
 import (
 	"fmt"
 
+	"healthcheck/x/monitored/keeper"
+	"healthcheck/x/monitored/types"
+	commontypes "healthcheck/x/types"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	capabilitytypes "github.com/cosmos/cosmos-sdk/x/capability/types"
@@ -10,8 +14,6 @@ import (
 	porttypes "github.com/cosmos/ibc-go/v6/modules/core/05-port/types"
 	host "github.com/cosmos/ibc-go/v6/modules/core/24-host"
 	ibcexported "github.com/cosmos/ibc-go/v6/modules/core/exported"
-	"healthcheck/x/monitored/keeper"
-	"healthcheck/x/monitored/types"
 )
 
 type IBCModule struct {
@@ -49,12 +51,28 @@ func (im IBCModule) OnChanOpenInit(
 		return "", sdkerrors.Wrapf(types.ErrInvalidVersion, "got %s, expected %s", version, types.Version)
 	}
 
+	if counterparty.PortId != commontypes.HealthcheckPortID {
+		return "", sdkerrors.Wrapf(porttypes.ErrInvalidPort, "invalid counterparty port: %s, expected %s", counterparty.PortId, commontypes.HealthcheckPortID)
+	}
+
 	// Claim channel capability passed back by IBC module
 	if err := im.keeper.ClaimCapability(ctx, chanCap, host.ChannelCapabilityPath(portID, channelID)); err != nil {
 		return "", err
 	}
 
-	return version, nil
+	// TODO: can move "Intervals" into genesis and store in state, if we want different values for different chains
+	metadata := commontypes.HandshakeMetadata{
+		Version:         version,
+		UpdateInterval:  types.UpdateInterval,
+		TimeoutInterval: types.TimeoutInterval,
+	}
+
+	metadataBz, err := metadata.Marshal()
+	if err != nil {
+		return "", err
+	}
+
+	return string(metadataBz), nil
 }
 
 // OnChanOpenTry implements the IBCModule interface
