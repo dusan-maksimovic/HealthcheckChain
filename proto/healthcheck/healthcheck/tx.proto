@@ -1,7 +1,37 @@
 syntax = "proto3";
+
 package healthcheck.healthcheck;
+
+import "healthcheck/healthcheck/chain.proto";
 
 option go_package = "healthcheck/x/healthcheck/types";
 
 // Msg defines the Msg service.
-service Msg {}
+service Msg {
+  rpc CreateChain (MsgCreateChain) returns (MsgCreateChainResponse);
+  rpc UpdateChain (MsgUpdateChain) returns (MsgUpdateChainResponse);
+  rpc DeleteChain (MsgDeleteChain) returns (MsgDeleteChainResponse);
+}
+message MsgCreateChain {
+  string creator      = 1;
+  string chainId      = 2;
+  string connectionId = 3;
+}
+
+message MsgCreateChainResponse {}
+
+message MsgUpdateChain {
+  string creator      = 1;
+  string chainId      = 2;
+  string connectionId = 3;
+}
+
+message MsgUpdateChainResponse {}
+
+message MsgDeleteChain {
+  string creator = 1;
+  string chainId = 2;
+}
+
+message MsgDeleteChainResponse {}
+
