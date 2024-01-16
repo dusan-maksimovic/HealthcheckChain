@@ -23,9 +23,15 @@ var _ = math.Inf
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
 type Chain struct {
-	ChainId      string `protobuf:"bytes,1,opt,name=chainId,proto3" json:"chainId,omitempty"`
-	ConnectionId string `protobuf:"bytes,2,opt,name=connectionId,proto3" json:"connectionId,omitempty"`
-	Creator      string `protobuf:"bytes,3,opt,name=creator,proto3" json:"creator,omitempty"`
+	ChainId             string `protobuf:"bytes,1,opt,name=chainId,proto3" json:"chainId,omitempty"`
+	ConnectionId        string `protobuf:"bytes,2,opt,name=connectionId,proto3" json:"connectionId,omitempty"`
+	Creator             string `protobuf:"bytes,3,opt,name=creator,proto3" json:"creator,omitempty"`
+	UpdateInterval      uint64 `protobuf:"varint,4,opt,name=updateInterval,proto3" json:"updateInterval,omitempty"`
+	TimeoutInterval     uint64 `protobuf:"varint,5,opt,name=timeoutInterval,proto3" json:"timeoutInterval,omitempty"`
+	Status              uint64 `protobuf:"varint,6,opt,name=status,proto3" json:"status,omitempty"`
+	Timestamp           uint64 `protobuf:"varint,7,opt,name=timestamp,proto3" json:"timestamp,omitempty"`
+	Block               uint64 `protobuf:"varint,8,opt,name=block,proto3" json:"block,omitempty"`
+	RegistryBlockHeight uint64 `protobuf:"varint,9,opt,name=registryBlockHeight,proto3" json:"registryBlockHeight,omitempty"`
 }
 
 func (m *Chain) Reset()         { *m = Chain{} }
@@ -82,6 +88,48 @@ func (m *Chain) GetCreator() string {
 	return ""
 }
 
+func (m *Chain) GetUpdateInterval() uint64 {
+	if m != nil {
+		return m.UpdateInterval
+	}
+	return 0
+}
+
+func (m *Chain) GetTimeoutInterval() uint64 {
+	if m != nil {
+		return m.TimeoutInterval
+	}
+	return 0
+}
+
+func (m *Chain) GetStatus() uint64 {
+	if m != nil {
+		return m.Status
+	}
+	return 0
+}
+
+func (m *Chain) GetTimestamp() uint64 {
+	if m != nil {
+		return m.Timestamp
+	}
+	return 0
+}
+
+func (m *Chain) GetBlock() uint64 {
+	if m != nil {
+		return m.Block
+	}
+	return 0
+}
+
+func (m *Chain) GetRegistryBlockHeight() uint64 {
+	if m != nil {
+		return m.RegistryBlockHeight
+	}
+	return 0
+}
+
 func init() {
 	proto.RegisterType((*Chain)(nil), "healthcheck.healthcheck.Chain")
 }
@@ -91,18 +139,25 @@ func init() {
 }
 
 var fileDescriptor_d24e1b453b69ac81 = []byte{
-	// 161 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xe2, 0x52, 0xce, 0x48, 0x4d, 0xcc,
-	0x29, 0xc9, 0x48, 0xce, 0x48, 0x4d, 0xce, 0xd6, 0x47, 0x66, 0x27, 0x67, 0x24, 0x66, 0xe6, 0xe9,
-	0x15, 0x14, 0xe5, 0x97, 0xe4, 0x0b, 0x89, 0x23, 0x49, 0xe8, 0x21, 0xb1, 0x95, 0xe2, 0xb9, 0x58,
-	0x9d, 0x41, 0xea, 0x84, 0x24, 0xb8, 0xd8, 0xc1, 0x1a, 0x3c, 0x53, 0x24, 0x18, 0x15, 0x18, 0x35,
-	0x38, 0x83, 0x60, 0x5c, 0x21, 0x25, 0x2e, 0x9e, 0xe4, 0xfc, 0xbc, 0xbc, 0xd4, 0xe4, 0x92, 0xcc,
-	0x7c, 0x90, 0x34, 0x13, 0x58, 0x1a, 0x45, 0x0c, 0xac, 0xbb, 0x28, 0x35, 0xb1, 0x24, 0xbf, 0x48,
-	0x82, 0x19, 0xaa, 0x1b, 0xc2, 0x75, 0xb2, 0x3c, 0xf1, 0x48, 0x8e, 0xf1, 0xc2, 0x23, 0x39, 0xc6,
-	0x07, 0x8f, 0xe4, 0x18, 0x27, 0x3c, 0x96, 0x63, 0xb8, 0xf0, 0x58, 0x8e, 0xe1, 0xc6, 0x63, 0x39,
-	0x86, 0x28, 0x79, 0x64, 0xc7, 0x56, 0xa0, 0x38, 0xbd, 0xa4, 0xb2, 0x20, 0xb5, 0x38, 0x89, 0x0d,
-	0xec, 0x76, 0x63, 0x40, 0x00, 0x00, 0x00, 0xff, 0xff, 0x09, 0x81, 0x7b, 0xfe, 0xe2, 0x00, 0x00,
-	0x00,
+	// 277 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x6c, 0x91, 0xb1, 0x4e, 0xc3, 0x30,
+	0x14, 0x45, 0xe3, 0xd2, 0xa4, 0xe4, 0x09, 0x81, 0x64, 0x10, 0x78, 0x40, 0xa6, 0x2a, 0x12, 0xca,
+	0x54, 0x90, 0x98, 0x58, 0xcb, 0x42, 0xd7, 0x8e, 0x6c, 0xae, 0xfb, 0xd4, 0x44, 0x4d, 0xe3, 0xc8,
+	0x79, 0x41, 0xf4, 0x2f, 0xf8, 0x13, 0x7e, 0x83, 0xb1, 0x23, 0x23, 0x4a, 0x7e, 0x04, 0xc5, 0x2d,
+	0x90, 0x56, 0x6c, 0xbe, 0xf7, 0x9c, 0xbb, 0xf8, 0xc1, 0x75, 0x8c, 0x2a, 0xa5, 0x58, 0xc7, 0xa8,
+	0x17, 0xb7, 0xed, 0xb7, 0x8e, 0x55, 0x92, 0x0d, 0x73, 0x6b, 0xc8, 0xf0, 0x8b, 0x16, 0x18, 0xb6,
+	0xde, 0x83, 0xf7, 0x0e, 0xf8, 0x8f, 0x8d, 0xc8, 0x05, 0xf4, 0xdc, 0x62, 0x3c, 0x13, 0xac, 0xcf,
+	0xa2, 0x70, 0xf2, 0x13, 0xf9, 0x00, 0x8e, 0xb4, 0xc9, 0x32, 0xd4, 0x94, 0x98, 0x06, 0x77, 0x1c,
+	0xde, 0xe9, 0xdc, 0xda, 0xa2, 0x22, 0x63, 0xc5, 0xc1, 0x76, 0xbd, 0x89, 0xfc, 0x06, 0x8e, 0xcb,
+	0x7c, 0xa6, 0x08, 0xc7, 0x19, 0xa1, 0x7d, 0x51, 0xa9, 0xe8, 0xf6, 0x59, 0xd4, 0x9d, 0xec, 0xb5,
+	0x3c, 0x82, 0x13, 0x4a, 0x96, 0x68, 0x4a, 0xfa, 0x15, 0x7d, 0x27, 0xee, 0xd7, 0xfc, 0x1c, 0x82,
+	0x82, 0x14, 0x95, 0x85, 0x08, 0x9c, 0xb0, 0x4d, 0xfc, 0x12, 0xc2, 0x46, 0x2d, 0x48, 0x2d, 0x73,
+	0xd1, 0x73, 0xe8, 0xaf, 0xe0, 0x67, 0xe0, 0x4f, 0x53, 0xa3, 0x17, 0xe2, 0xd0, 0x91, 0x4d, 0xe0,
+	0x77, 0x70, 0x6a, 0x71, 0x9e, 0x14, 0x64, 0x57, 0xa3, 0xa6, 0x78, 0xc2, 0x64, 0x1e, 0x93, 0x08,
+	0x9d, 0xf3, 0x1f, 0x1a, 0x3d, 0x7c, 0x54, 0x92, 0xad, 0x2b, 0xc9, 0xbe, 0x2a, 0xc9, 0xde, 0x6a,
+	0xe9, 0xad, 0x6b, 0xe9, 0x7d, 0xd6, 0xd2, 0x7b, 0xbe, 0x6a, 0xff, 0xfe, 0xeb, 0xce, 0x2d, 0x68,
+	0x95, 0x63, 0x31, 0x0d, 0xdc, 0x31, 0xee, 0xbf, 0x03, 0x00, 0x00, 0xff, 0xff, 0x5b, 0x7b, 0x71,
+	0xab, 0xb3, 0x01, 0x00, 0x00,
 }
 
 func (m *Chain) Marshal() (dAtA []byte, err error) {
@@ -125,6 +180,36 @@ func (m *Chain) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	_ = i
 	var l int
 	_ = l
+	if m.RegistryBlockHeight != 0 {
+		i = encodeVarintChain(dAtA, i, uint64(m.RegistryBlockHeight))
+		i--
+		dAtA[i] = 0x48
+	}
+	if m.Block != 0 {
+		i = encodeVarintChain(dAtA, i, uint64(m.Block))
+		i--
+		dAtA[i] = 0x40
+	}
+	if m.Timestamp != 0 {
+		i = encodeVarintChain(dAtA, i, uint64(m.Timestamp))
+		i--
+		dAtA[i] = 0x38
+	}
+	if m.Status != 0 {
+		i = encodeVarintChain(dAtA, i, uint64(m.Status))
+		i--
+		dAtA[i] = 0x30
+	}
+	if m.TimeoutInterval != 0 {
+		i = encodeVarintChain(dAtA, i, uint64(m.TimeoutInterval))
+		i--
+		dAtA[i] = 0x28
+	}
+	if m.UpdateInterval != 0 {
+		i = encodeVarintChain(dAtA, i, uint64(m.UpdateInterval))
+		i--
+		dAtA[i] = 0x20
+	}
 	if len(m.Creator) > 0 {
 		i -= len(m.Creator)
 		copy(dAtA[i:], m.Creator)
@@ -177,6 +262,24 @@ func (m *Chain) Size() (n int) {
 	l = len(m.Creator)
 	if l > 0 {
 		n += 1 + l + sovChain(uint64(l))
+	}
+	if m.UpdateInterval != 0 {
+		n += 1 + sovChain(uint64(m.UpdateInterval))
+	}
+	if m.TimeoutInterval != 0 {
+		n += 1 + sovChain(uint64(m.TimeoutInterval))
+	}
+	if m.Status != 0 {
+		n += 1 + sovChain(uint64(m.Status))
+	}
+	if m.Timestamp != 0 {
+		n += 1 + sovChain(uint64(m.Timestamp))
+	}
+	if m.Block != 0 {
+		n += 1 + sovChain(uint64(m.Block))
+	}
+	if m.RegistryBlockHeight != 0 {
+		n += 1 + sovChain(uint64(m.RegistryBlockHeight))
 	}
 	return n
 }
@@ -312,6 +415,120 @@ func (m *Chain) Unmarshal(dAtA []byte) error {
 			}
 			m.Creator = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
+		case 4:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field UpdateInterval", wireType)
+			}
+			m.UpdateInterval = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowChain
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.UpdateInterval |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 5:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TimeoutInterval", wireType)
+			}
+			m.TimeoutInterval = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowChain
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.TimeoutInterval |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 6:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Status", wireType)
+			}
+			m.Status = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowChain
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.Status |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 7:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Timestamp", wireType)
+			}
+			m.Timestamp = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowChain
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.Timestamp |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 8:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Block", wireType)
+			}
+			m.Block = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowChain
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.Block |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 9:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field RegistryBlockHeight", wireType)
+			}
+			m.RegistryBlockHeight = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowChain
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.RegistryBlockHeight |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
 		default:
 			iNdEx = preIndex
 			skippy, err := skipChain(dAtA[iNdEx:])
