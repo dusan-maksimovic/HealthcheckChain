@@ -37,26 +37,7 @@ func (im IBCModule) OnChanOpenInit(
 	counterparty channeltypes.Counterparty,
 	version string,
 ) (string, error) {
-	if order != channeltypes.ORDERED {
-		return "", sdkerrors.Wrapf(channeltypes.ErrInvalidChannelOrdering, "expected %s channel, got %s ", channeltypes.ORDERED, order)
-	}
-
-	// Require portID is the portID module is bound to
-	boundPort := im.keeper.GetPort(ctx)
-	if boundPort != portID {
-		return "", sdkerrors.Wrapf(porttypes.ErrInvalidPort, "invalid port: %s, expected %s", portID, boundPort)
-	}
-
-	if version != types.Version {
-		return "", sdkerrors.Wrapf(types.ErrInvalidVersion, "got %s, expected %s", version, types.Version)
-	}
-
-	// Claim channel capability passed back by IBC module
-	if err := im.keeper.ClaimCapability(ctx, chanCap, host.ChannelCapabilityPath(portID, channelID)); err != nil {
-		return "", err
-	}
-
-	return version, nil
+	return "", sdkerrors.Wrapf(types.ErrInvalidChannelFlow, "channel handshake must be initiated by monitored chain")
 }
 
 // OnChanOpenTry implements the IBCModule interface
@@ -80,8 +61,18 @@ func (im IBCModule) OnChanOpenTry(
 		return "", sdkerrors.Wrapf(porttypes.ErrInvalidPort, "invalid port: %s, expected %s", portID, boundPort)
 	}
 
-	if counterpartyVersion != types.Version {
-		return "", sdkerrors.Wrapf(types.ErrInvalidVersion, "invalid counterparty version: got: %s, expected %s", counterpartyVersion, types.Version)
+	if counterparty.PortId != commontypes.MonitoredPortID {
+		return "", sdkerrors.Wrapf(porttypes.ErrInvalidPort, "invalid counterparty port: %s, expected %s", counterparty.PortId, commontypes.MonitoredPortID)
+	}
+
+	metadata := commontypes.HandshakeMetadata{}
+	if err := (&metadata).Unmarshal([]byte(counterpartyVersion)); err != nil {
+		return "", sdkerrors.Wrapf(types.ErrInvalidHandshakeMetadata,
+			"error unmarshalling ibc-try metadata: \n%v; \nmetadata: %v", err, counterpartyVersion)
+	}
+
+	if metadata.Version != commontypes.Version {
+		return "", sdkerrors.Wrapf(types.ErrInvalidVersion, "invalid counterparty version: got: %s, expected %s", counterpartyVersion, commontypes.Version)
 	}
 
 	// Module may have already claimed capability in OnChanOpenInit in the case of crossing hellos
@@ -93,6 +84,15 @@ func (im IBCModule) OnChanOpenTry(
 		if err := im.keeper.ClaimCapability(ctx, chanCap, host.ChannelCapabilityPath(portID, channelID)); err != nil {
 			return "", err
 		}
+	}
+
+	if len(connectionHops) != 1 {
+		return "", sdkerrors.Wrapf(types.ErrInvalidConnectionHops, "expected only one connection hop.")
+	}
+
+	_, err := im.keeper.GetCounterpartyChainID(ctx, portID, channelID)
+	if err != nil {
+		return "", err
 	}
 
 	return types.Version, nil
