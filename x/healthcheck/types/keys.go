@@ -24,6 +24,13 @@ const (
 	DefaultTimeoutInterval = 20
 )
 
+type MonitoredChainStatus uint64
+
+const (
+	Inactive MonitoredChainStatus = iota
+	Active
+)
+
 var (
 	// PortKey defines the key to store the port ID in store
 	PortKey = KeyPrefix("healthcheck-port-")

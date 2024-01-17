@@ -110,7 +110,7 @@ func (im IBCModule) OnChanOpenTry(
 	}
 
 	if metadata.UpdateInterval == 0 {
-		metadata.UpdateInterval = types.DefaultTimeoutInterval
+		metadata.UpdateInterval = types.DefaultUpdateInterval
 	}
 
 	if metadata.TimeoutInterval == 0 {
@@ -170,7 +170,7 @@ func (im IBCModule) OnRecvPacket(
 	modulePacket channeltypes.Packet,
 	relayer sdk.AccAddress,
 ) ibcexported.Acknowledgement {
-	var ack channeltypes.Acknowledgement
+	ack := channeltypes.NewResultAcknowledgement([]byte{byte(1)})
 
 	// this line is used by starport scaffolding # oracle/packet/module/recv
 
@@ -179,8 +179,32 @@ func (im IBCModule) OnRecvPacket(
 		return channeltypes.NewErrorAcknowledgement(sdkerrors.Wrapf(sdkerrors.ErrUnknownRequest, "cannot unmarshal packet data: %s", err.Error()))
 	}
 
+	// connection ID is checked during handshake, so whatever chain ID is returned here we know it matches the right connection ID
+	chainID, err := im.keeper.GetCounterpartyChainID(ctx, modulePacket.DestinationPort, modulePacket.DestinationChannel)
+	if err != nil {
+		return channeltypes.NewErrorAcknowledgement(err)
+	}
+
+	monitoredChain, found := im.keeper.GetChain(ctx, chainID)
+	if !found {
+		return channeltypes.NewErrorAcknowledgement(sdkerrors.Wrapf(types.ErrChainNotRegistered, "chain with the chain ID %s isn't registered yet", chainID))
+	}
+
 	// Dispatch packet
 	switch packet := modulePacketData.Packet.(type) {
+	case *commontypes.HealthcheckPacketData_Data:
+		if monitoredChain.Timestamp > packet.Data.Timestamp ||
+			monitoredChain.Block > packet.Data.Block {
+			err := fmt.Errorf("newer healthcheck update has already been submitted for chain with chain ID %s", monitoredChain.ChainId)
+			return channeltypes.NewErrorAcknowledgement(err)
+		}
+
+		monitoredChain.Status = uint64(types.Active)
+		monitoredChain.Timestamp = packet.Data.Timestamp
+		monitoredChain.Block = packet.Data.Block
+		monitoredChain.RegistryBlockHeight = uint64(ctx.BlockHeight())
+		im.keeper.SetChain(ctx, monitoredChain)
+
 	// this line is used by starport scaffolding # ibc/packet/module/recv
 	default:
 		err := fmt.Errorf("unrecognized %s packet type: %T", types.ModuleName, packet)
@@ -198,54 +222,7 @@ func (im IBCModule) OnAcknowledgementPacket(
 	acknowledgement []byte,
 	relayer sdk.AccAddress,
 ) error {
-	var ack channeltypes.Acknowledgement
-	if err := types.ModuleCdc.UnmarshalJSON(acknowledgement, &ack); err != nil {
-		return sdkerrors.Wrapf(sdkerrors.ErrUnknownRequest, "cannot unmarshal packet acknowledgement: %v", err)
-	}
-
-	// this line is used by starport scaffolding # oracle/packet/module/ack
-
-	var modulePacketData commontypes.HealthcheckPacketData
-	if err := modulePacketData.Unmarshal(modulePacket.GetData()); err != nil {
-		return sdkerrors.Wrapf(sdkerrors.ErrUnknownRequest, "cannot unmarshal packet data: %s", err.Error())
-	}
-
-	var eventType string
-
-	// Dispatch packet
-	switch packet := modulePacketData.Packet.(type) {
-	// this line is used by starport scaffolding # ibc/packet/module/ack
-	default:
-		errMsg := fmt.Sprintf("unrecognized %s packet type: %T", types.ModuleName, packet)
-		return sdkerrors.Wrap(sdkerrors.ErrUnknownRequest, errMsg)
-	}
-
-	ctx.EventManager().EmitEvent(
-		sdk.NewEvent(
-			eventType,
-			sdk.NewAttribute(sdk.AttributeKeyModule, types.ModuleName),
-			sdk.NewAttribute(types.AttributeKeyAck, fmt.Sprintf("%v", ack)),
-		),
-	)
-
-	switch resp := ack.Response.(type) {
-	case *channeltypes.Acknowledgement_Result:
-		ctx.EventManager().EmitEvent(
-			sdk.NewEvent(
-				eventType,
-				sdk.NewAttribute(types.AttributeKeyAckSuccess, string(resp.Result)),
-			),
-		)
-	case *channeltypes.Acknowledgement_Error:
-		ctx.EventManager().EmitEvent(
-			sdk.NewEvent(
-				eventType,
-				sdk.NewAttribute(types.AttributeKeyAckError, resp.Error),
-			),
-		)
-	}
-
-	return nil
+	return fmt.Errorf("registry chain does not send packets; no acknowledgements are expected")
 }
 
 // OnTimeoutPacket implements the IBCModule interface
@@ -254,18 +231,5 @@ func (im IBCModule) OnTimeoutPacket(
 	modulePacket channeltypes.Packet,
 	relayer sdk.AccAddress,
 ) error {
-	var modulePacketData commontypes.HealthcheckPacketData
-	if err := modulePacketData.Unmarshal(modulePacket.GetData()); err != nil {
-		return sdkerrors.Wrapf(sdkerrors.ErrUnknownRequest, "cannot unmarshal packet data: %s", err.Error())
-	}
-
-	// Dispatch packet
-	switch packet := modulePacketData.Packet.(type) {
-	// this line is used by starport scaffolding # ibc/packet/module/timeout
-	default:
-		errMsg := fmt.Sprintf("unrecognized %s packet type: %T", types.ModuleName, packet)
-		return sdkerrors.Wrap(sdkerrors.ErrUnknownRequest, errMsg)
-	}
-
-	return nil
+	return fmt.Errorf("registry chain does not send packets; no timeouts are expected")
 }
