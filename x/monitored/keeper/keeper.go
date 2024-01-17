@@ -1,7 +1,9 @@
 package keeper
 
 import (
+	"encoding/binary"
 	"fmt"
+	"time"
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
@@ -9,6 +11,7 @@ import (
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	capabilitytypes "github.com/cosmos/cosmos-sdk/x/capability/types"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
+	clienttypes "github.com/cosmos/ibc-go/v6/modules/core/02-client/types"
 	channeltypes "github.com/cosmos/ibc-go/v6/modules/core/04-channel/types"
 	host "github.com/cosmos/ibc-go/v6/modules/core/24-host"
 	"github.com/cosmos/ibc-go/v6/modules/core/exported"
@@ -115,6 +118,47 @@ func (k Keeper) GetRegistryChainChannelID(ctx sdk.Context) string {
 func (k Keeper) SetRegistryChainChannelID(ctx sdk.Context, channelID string) {
 	store := ctx.KVStore(k.storeKey)
 	store.Set(types.RegistryChainChannelIDKey, []byte(channelID))
+}
+
+func (k Keeper) GetLastHealthcheckUpdateHeight(ctx sdk.Context) uint64 {
+	store := ctx.KVStore(k.storeKey)
+	bz := store.Get(types.LastHealthcheckUpdateHeightKey)
+	if bz == nil {
+		return 0
+	}
+
+	return binary.BigEndian.Uint64(bz)
+}
+
+func (k Keeper) SetLastHealthcheckUpdateHeight(ctx sdk.Context, height uint64) {
+	store := ctx.KVStore(k.storeKey)
+	bz := make([]byte, 8)
+	binary.BigEndian.PutUint64(bz, height)
+	store.Set(types.LastHealthcheckUpdateHeightKey, bz)
+}
+
+func (k Keeper) SendHealthcheckUpdatePacket(
+	ctx sdk.Context,
+	portID string,
+	channelID string,
+	timeoutPeriod time.Duration,
+	packetData []byte) error {
+	capName := host.ChannelCapabilityPath(portID, channelID)
+	chanCap, found := k.scopedKeeper.GetCapability(ctx, capName)
+	if !found {
+		return sdkerrors.Wrapf(channeltypes.ErrChannelCapabilityNotFound, "could not retrieve channel capability at: %s", capName)
+	}
+
+	_, err := k.channelKeeper.SendPacket(
+		ctx,
+		chanCap,
+		portID,
+		channelID,
+		clienttypes.Height{},
+		uint64(ctx.BlockTime().Add(timeoutPeriod).UnixNano()),
+		packetData)
+
+	return err
 }
 
 func (k Keeper) Logger(ctx sdk.Context) log.Logger {

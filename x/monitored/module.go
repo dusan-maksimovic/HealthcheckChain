@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+
 	// this line is used by starport scaffolding # 1
 
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
@@ -11,15 +12,18 @@ import (
 
 	abci "github.com/tendermint/tendermint/abci/types"
 
+	"healthcheck/x/monitored/client/cli"
+	"healthcheck/x/monitored/keeper"
+	"healthcheck/x/monitored/types"
+
+	commontypes "healthcheck/x/types"
+
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"
 	cdctypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	porttypes "github.com/cosmos/ibc-go/v6/modules/core/05-port/types"
-	"healthcheck/x/monitored/client/cli"
-	"healthcheck/x/monitored/keeper"
-	"healthcheck/x/monitored/types"
 )
 
 var (
@@ -156,6 +160,46 @@ func (AppModule) ConsensusVersion() uint64 { return 1 }
 func (am AppModule) BeginBlock(_ sdk.Context, _ abci.RequestBeginBlock) {}
 
 // EndBlock contains the logic that is automatically triggered at the end of each block
-func (am AppModule) EndBlock(_ sdk.Context, _ abci.RequestEndBlock) []abci.ValidatorUpdate {
+func (am AppModule) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.ValidatorUpdate {
+	HealthcheckUpdatesEndBlock(am.keeper, ctx)
+
 	return []abci.ValidatorUpdate{}
+}
+
+func HealthcheckUpdatesEndBlock(keeper keeper.Keeper, ctx sdk.Context) {
+	lastUpdateHeight := int64(keeper.GetLastHealthcheckUpdateHeight(ctx))
+	currentHeight := ctx.BlockHeight()
+
+	if currentHeight-lastUpdateHeight < types.UpdateInterval {
+		return
+	}
+
+	channelID := keeper.GetRegistryChainChannelID(ctx)
+	if channelID == "" {
+		// IBC channel for sending healthcheck updates isn't established yet
+		return
+	}
+
+	packet := commontypes.HealthcheckPacketData{
+		Packet: &commontypes.HealthcheckPacketData_Data{
+			Data: &commontypes.HealthcheckUpdateData{
+				Block:     uint64(currentHeight),
+				Timestamp: uint64(ctx.BlockTime().UnixNano()),
+			},
+		},
+	}
+
+	packetData, err := types.ModuleCdc.MarshalJSON(&packet)
+	if err != nil {
+		keeper.Logger(ctx).Debug("failed to marshal healthcheck update IBC packet")
+		return
+	}
+
+	err = keeper.SendHealthcheckUpdatePacket(ctx, keeper.GetPort(ctx), channelID, types.DefaultTimeoutPeriod, packetData)
+	if err != nil {
+		keeper.Logger(ctx).Debug("failed to send healthcheck update IBC packet")
+		return
+	}
+
+	keeper.SetLastHealthcheckUpdateHeight(ctx, uint64(currentHeight))
 }

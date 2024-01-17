@@ -1,5 +1,7 @@
 package types
 
+import "time"
+
 const (
 	// ModuleName defines the module name
 	ModuleName = "monitored"
@@ -22,6 +24,8 @@ const (
 	UpdateInterval = 10
 
 	TimeoutInterval = 20
+
+	DefaultTimeoutPeriod = 7 * 24 * time.Hour
 )
 
 var (
@@ -31,6 +35,10 @@ var (
 	// RegistryChainChannelIDKey defines the key to store the channel ID
 	// that is used to send healthcheck updates to registry chain
 	RegistryChainChannelIDKey = KeyPrefix("RegistryChainChannelID")
+
+	// LastHealthcheckUpdateHeightKey defines the key to store the last block height
+	// for which the healthcheck status was sent to registry chain
+	LastHealthcheckUpdateHeightKey = KeyPrefix("LastHealthcheckUpdateHeight")
 )
 
 func KeyPrefix(p string) []byte {
