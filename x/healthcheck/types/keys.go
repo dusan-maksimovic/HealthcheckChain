@@ -14,10 +14,14 @@ const (
 	MemStoreKey = "mem_healthcheck"
 
 	// Version defines the current version the IBC module supports
-	Version = "healthcheck-1"
+	Version = "1"
 
 	// PortID is the default port id that module binds to
 	PortID = "healthcheck"
+
+	DefaultUpdateInterval = 10
+
+	DefaultTimeoutInterval = 20
 )
 
 var (

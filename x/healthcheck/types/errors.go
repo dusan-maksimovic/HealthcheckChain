@@ -14,4 +14,7 @@ var (
 	ErrInvalidChannelFlow       = sdkerrors.Register(ModuleName, 1502, "invalid message sent to channel end")
 	ErrInvalidHandshakeMetadata = sdkerrors.Register(ModuleName, 1503, "invalid monitored handshake metadata")
 	ErrInvalidConnectionHops    = sdkerrors.Register(ModuleName, 1504, "invalid connection hops")
+	ErrChainNotRegistered       = sdkerrors.Register(ModuleName, 1505, "chain is not registered")
+	ErrUnexpectedConnectionID   = sdkerrors.Register(ModuleName, 1506, "unexpected connection ID")
+	ErrChainAlreadyTracked      = sdkerrors.Register(ModuleName, 1507, "chain is already tracked through another channel")
 )

@@ -65,8 +65,8 @@ func (im IBCModule) OnChanOpenTry(
 		return "", sdkerrors.Wrapf(porttypes.ErrInvalidPort, "invalid counterparty port: %s, expected %s", counterparty.PortId, commontypes.MonitoredPortID)
 	}
 
-	metadata := commontypes.HandshakeMetadata{}
-	if err := (&metadata).Unmarshal([]byte(counterpartyVersion)); err != nil {
+	metadata := &commontypes.HandshakeMetadata{}
+	if err := metadata.Unmarshal([]byte(counterpartyVersion)); err != nil {
 		return "", sdkerrors.Wrapf(types.ErrInvalidHandshakeMetadata,
 			"error unmarshalling ibc-try metadata: \n%v; \nmetadata: %v", err, counterpartyVersion)
 	}
@@ -90,12 +90,39 @@ func (im IBCModule) OnChanOpenTry(
 		return "", sdkerrors.Wrapf(types.ErrInvalidConnectionHops, "expected only one connection hop.")
 	}
 
-	_, err := im.keeper.GetCounterpartyChainID(ctx, portID, channelID)
+	monitoredChainID, err := im.keeper.GetCounterpartyChainID(ctx, portID, channelID)
 	if err != nil {
 		return "", err
 	}
 
-	return types.Version, nil
+	monitoredChain, found := im.keeper.GetChain(ctx, monitoredChainID)
+	if !found {
+		return "", sdkerrors.Wrapf(types.ErrChainNotRegistered, "chain with the chain ID %s isn't registered yet", monitoredChainID)
+	}
+
+	if monitoredChain.ConnectionId != connectionHops[0] {
+		return "", sdkerrors.Wrapf(types.ErrUnexpectedConnectionID, "unexpected connection for chain with chain ID %s, expected: %s, got: %s", monitoredChainID, monitoredChain.ConnectionId, connectionHops[0])
+	}
+
+	// TODO: if channel is closed we could check the timeout and allow a new channel to be opened even if this two fields were set
+	if monitoredChain.UpdateInterval != 0 && monitoredChain.TimeoutInterval != 0 {
+		return "", types.ErrChainAlreadyTracked
+	}
+
+	if metadata.UpdateInterval == 0 {
+		metadata.UpdateInterval = types.DefaultTimeoutInterval
+	}
+
+	if metadata.TimeoutInterval == 0 {
+		metadata.TimeoutInterval = types.DefaultTimeoutInterval
+	}
+
+	monitoredChain.TimeoutInterval = metadata.TimeoutInterval
+	monitoredChain.UpdateInterval = metadata.UpdateInterval
+
+	im.keeper.SetChain(ctx, monitoredChain)
+
+	return commontypes.Version, nil
 }
 
 // OnChanOpenAck implements the IBCModule interface
@@ -106,10 +133,7 @@ func (im IBCModule) OnChanOpenAck(
 	_,
 	counterpartyVersion string,
 ) error {
-	if counterpartyVersion != types.Version {
-		return sdkerrors.Wrapf(types.ErrInvalidVersion, "invalid counterparty version: %s, expected %s", counterpartyVersion, types.Version)
-	}
-	return nil
+	return sdkerrors.Wrapf(types.ErrInvalidChannelFlow, "channel handshake must be initiated by monitored chain")
 }
 
 // OnChanOpenConfirm implements the IBCModule interface
