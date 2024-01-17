@@ -27,6 +27,10 @@ const (
 var (
 	// PortKey defines the key to store the port ID in store
 	PortKey = KeyPrefix("monitored-port-")
+
+	// RegistryChainChannelIDKey defines the key to store the channel ID
+	// that is used to send healthcheck updates to registry chain
+	RegistryChainChannelIDKey = KeyPrefix("RegistryChainChannelID")
 )
 
 func KeyPrefix(p string) []byte {

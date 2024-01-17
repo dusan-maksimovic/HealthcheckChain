@@ -55,6 +55,11 @@ func (im IBCModule) OnChanOpenInit(
 		return "", sdkerrors.Wrapf(porttypes.ErrInvalidPort, "invalid counterparty port: %s, expected %s", counterparty.PortId, commontypes.HealthcheckPortID)
 	}
 
+	registryChainChannelID := im.keeper.GetRegistryChainChannelID(ctx)
+	if registryChainChannelID != "" {
+		return "", types.ErrHealthcheckChannelAlreadySet
+	}
+
 	// Claim channel capability passed back by IBC module
 	if err := im.keeper.ClaimCapability(ctx, chanCap, host.ChannelCapabilityPath(portID, channelID)); err != nil {
 		return "", err
@@ -100,6 +105,9 @@ func (im IBCModule) OnChanOpenAck(
 	if counterpartyVersion != commontypes.Version {
 		return sdkerrors.Wrapf(types.ErrInvalidVersion, "invalid counterparty version: %s, expected %s", counterpartyVersion, types.Version)
 	}
+
+	im.keeper.SetRegistryChainChannelID(ctx, channelID)
+
 	return nil
 }
 
@@ -109,7 +117,7 @@ func (im IBCModule) OnChanOpenConfirm(
 	portID,
 	channelID string,
 ) error {
-	return nil
+	return sdkerrors.Wrapf(types.ErrInvalidChannelFlow, "channel handshake must be initiated by monitored chain")
 }
 
 // OnChanCloseInit implements the IBCModule interface

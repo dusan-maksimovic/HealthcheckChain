@@ -107,6 +107,16 @@ func (k Keeper) ClaimCapability(ctx sdk.Context, cap *capabilitytypes.Capability
 	return k.scopedKeeper.ClaimCapability(ctx, cap, name)
 }
 
+func (k Keeper) GetRegistryChainChannelID(ctx sdk.Context) string {
+	store := ctx.KVStore(k.storeKey)
+	return string(store.Get(types.RegistryChainChannelIDKey))
+}
+
+func (k Keeper) SetRegistryChainChannelID(ctx sdk.Context, channelID string) {
+	store := ctx.KVStore(k.storeKey)
+	store.Set(types.RegistryChainChannelIDKey, []byte(channelID))
+}
+
 func (k Keeper) Logger(ctx sdk.Context) log.Logger {
 	return ctx.Logger().With("module", fmt.Sprintf("x/%s", types.ModuleName))
 }
