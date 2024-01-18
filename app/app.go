@@ -106,9 +106,7 @@ import (
 	healthcheckmodule "healthcheck/x/healthcheck"
 	healthcheckmodulekeeper "healthcheck/x/healthcheck/keeper"
 	healthcheckmoduletypes "healthcheck/x/healthcheck/types"
-	monitoredmodule "healthcheck/x/monitored"
-	monitoredmodulekeeper "healthcheck/x/monitored/keeper"
-	monitoredmoduletypes "healthcheck/x/monitored/types"
+
 	// this line is used by starport scaffolding # stargate/app/moduleImport
 
 	appparams "healthcheck/app/params"
@@ -117,7 +115,7 @@ import (
 
 const (
 	AccountAddressPrefix = "cosmos"
-	Name                 = "healthcheck"
+	Name                 = "registry"
 )
 
 // this line is used by starport scaffolding # stargate/wasm/app/enabledProposals
@@ -168,7 +166,6 @@ var (
 		ica.AppModuleBasic{},
 		vesting.AppModuleBasic{},
 		healthcheckmodule.AppModuleBasic{},
-		monitoredmodule.AppModuleBasic{},
 		// this line is used by starport scaffolding # stargate/app/moduleBasic
 	)
 
@@ -244,8 +241,6 @@ type App struct {
 
 	ScopedHealthcheckKeeper capabilitykeeper.ScopedKeeper
 	HealthcheckKeeper       healthcheckmodulekeeper.Keeper
-	ScopedMonitoredKeeper   capabilitykeeper.ScopedKeeper
-	MonitoredKeeper         monitoredmodulekeeper.Keeper
 	// this line is used by starport scaffolding # stargate/app/keeperDeclaration
 
 	// mm is the module manager
@@ -291,7 +286,6 @@ func New(
 		ibctransfertypes.StoreKey, icahosttypes.StoreKey, capabilitytypes.StoreKey, group.StoreKey,
 		icacontrollertypes.StoreKey,
 		healthcheckmoduletypes.StoreKey,
-		monitoredmoduletypes.StoreKey,
 		// this line is used by starport scaffolding # stargate/app/storeKey
 	)
 	tkeys := sdk.NewTransientStoreKeys(paramstypes.TStoreKey)
@@ -517,20 +511,6 @@ func New(
 	healthcheckModule := healthcheckmodule.NewAppModule(appCodec, app.HealthcheckKeeper, app.AccountKeeper, app.BankKeeper)
 
 	healthcheckIBCModule := healthcheckmodule.NewIBCModule(app.HealthcheckKeeper)
-	scopedMonitoredKeeper := app.CapabilityKeeper.ScopeToModule(monitoredmoduletypes.ModuleName)
-	app.ScopedMonitoredKeeper = scopedMonitoredKeeper
-	app.MonitoredKeeper = *monitoredmodulekeeper.NewKeeper(
-		appCodec,
-		keys[monitoredmoduletypes.StoreKey],
-		keys[monitoredmoduletypes.MemStoreKey],
-		app.GetSubspace(monitoredmoduletypes.ModuleName),
-		app.IBCKeeper.ChannelKeeper,
-		&app.IBCKeeper.PortKeeper,
-		scopedMonitoredKeeper,
-	)
-	monitoredModule := monitoredmodule.NewAppModule(appCodec, app.MonitoredKeeper, app.AccountKeeper, app.BankKeeper)
-
-	monitoredIBCModule := monitoredmodule.NewIBCModule(app.MonitoredKeeper)
 	// this line is used by starport scaffolding # stargate/app/keeperDefinition
 
 	/**** IBC Routing ****/
@@ -543,7 +523,6 @@ func New(
 	ibcRouter.AddRoute(icahosttypes.SubModuleName, icaHostIBCModule).
 		AddRoute(ibctransfertypes.ModuleName, transferIBCModule)
 	ibcRouter.AddRoute(healthcheckmoduletypes.ModuleName, healthcheckIBCModule)
-	ibcRouter.AddRoute(monitoredmoduletypes.ModuleName, monitoredIBCModule)
 	// this line is used by starport scaffolding # ibc/app/router
 	app.IBCKeeper.SetRouter(ibcRouter)
 
@@ -599,7 +578,6 @@ func New(
 		transferModule,
 		icaModule,
 		healthcheckModule,
-		monitoredModule,
 		// this line is used by starport scaffolding # stargate/app/appModule
 	)
 
@@ -630,7 +608,6 @@ func New(
 		paramstypes.ModuleName,
 		vestingtypes.ModuleName,
 		healthcheckmoduletypes.ModuleName,
-		monitoredmoduletypes.ModuleName,
 		// this line is used by starport scaffolding # stargate/app/beginBlockers
 	)
 
@@ -656,7 +633,6 @@ func New(
 		upgradetypes.ModuleName,
 		vestingtypes.ModuleName,
 		healthcheckmoduletypes.ModuleName,
-		monitoredmoduletypes.ModuleName,
 		// this line is used by starport scaffolding # stargate/app/endBlockers
 	)
 
@@ -687,7 +663,6 @@ func New(
 		upgradetypes.ModuleName,
 		vestingtypes.ModuleName,
 		healthcheckmoduletypes.ModuleName,
-		monitoredmoduletypes.ModuleName,
 		// this line is used by starport scaffolding # stargate/app/initGenesis
 	)
 
@@ -718,7 +693,6 @@ func New(
 		ibc.NewAppModule(app.IBCKeeper),
 		transferModule,
 		healthcheckModule,
-		monitoredModule,
 		// this line is used by starport scaffolding # stargate/app/appModule
 	)
 	app.sm.RegisterStoreDecoders()
@@ -924,7 +898,6 @@ func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino
 	paramsKeeper.Subspace(icacontrollertypes.SubModuleName)
 	paramsKeeper.Subspace(icahosttypes.SubModuleName)
 	paramsKeeper.Subspace(healthcheckmoduletypes.ModuleName)
-	paramsKeeper.Subspace(monitoredmoduletypes.ModuleName)
 	// this line is used by starport scaffolding # stargate/app/paramSubspace
 
 	return paramsKeeper
