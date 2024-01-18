@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+
 	// this line is used by starport scaffolding # 1
 
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
@@ -11,15 +12,16 @@ import (
 
 	abci "github.com/tendermint/tendermint/abci/types"
 
+	"healthcheck/x/healthcheck/client/cli"
+	"healthcheck/x/healthcheck/keeper"
+	"healthcheck/x/healthcheck/types"
+
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"
 	cdctypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	porttypes "github.com/cosmos/ibc-go/v6/modules/core/05-port/types"
-	"healthcheck/x/healthcheck/client/cli"
-	"healthcheck/x/healthcheck/keeper"
-	"healthcheck/x/healthcheck/types"
 )
 
 var (
@@ -156,6 +158,38 @@ func (AppModule) ConsensusVersion() uint64 { return 1 }
 func (am AppModule) BeginBlock(_ sdk.Context, _ abci.RequestBeginBlock) {}
 
 // EndBlock contains the logic that is automatically triggered at the end of each block
-func (am AppModule) EndBlock(_ sdk.Context, _ abci.RequestEndBlock) []abci.ValidatorUpdate {
+func (am AppModule) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.ValidatorUpdate {
+	MonitoredChainsUpdateEndBlock(ctx, am.keeper)
+
 	return []abci.ValidatorUpdate{}
+}
+
+func MonitoredChainsUpdateEndBlock(ctx sdk.Context, keeper keeper.Keeper) {
+	currentHeight := ctx.BlockHeight()
+
+	keeper.IterateMonitoredChains(ctx, func(monitoredChain types.Chain) (stop bool) {
+		inactivationHeight := monitoredChain.RegistryBlockHeight + monitoredChain.UpdateInterval
+		if monitoredChain.Status == uint64(types.Active) &&
+			uint64(currentHeight) > inactivationHeight {
+			monitoredChain.Status = uint64(types.Inactive)
+			keeper.SetChain(ctx, monitoredChain)
+
+			return false
+		}
+
+		removalHeight := monitoredChain.RegistryBlockHeight + monitoredChain.UpdateInterval + monitoredChain.TimeoutInterval
+		if monitoredChain.Status == uint64(types.Inactive) &&
+			monitoredChain.ChannelId != "" &&
+			uint64(currentHeight) > removalHeight {
+			err := keeper.ChanCloseInit(ctx, keeper.GetPort(ctx), monitoredChain.ChannelId)
+			if err != nil {
+				keeper.Logger(ctx).Debug("failed to close channel with ID: %s. error: %s", monitoredChain.ChannelId, err.Error())
+			}
+
+			monitoredChain.ChannelId = ""
+			keeper.SetChain(ctx, monitoredChain)
+		}
+
+		return false
+	})
 }

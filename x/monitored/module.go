@@ -161,12 +161,12 @@ func (am AppModule) BeginBlock(_ sdk.Context, _ abci.RequestBeginBlock) {}
 
 // EndBlock contains the logic that is automatically triggered at the end of each block
 func (am AppModule) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.ValidatorUpdate {
-	HealthcheckUpdatesEndBlock(am.keeper, ctx)
+	HealthcheckUpdatesEndBlock(ctx, am.keeper)
 
 	return []abci.ValidatorUpdate{}
 }
 
-func HealthcheckUpdatesEndBlock(keeper keeper.Keeper, ctx sdk.Context) {
+func HealthcheckUpdatesEndBlock(ctx sdk.Context, keeper keeper.Keeper) {
 	lastUpdateHeight := int64(keeper.GetLastHealthcheckUpdateHeight(ctx))
 	currentHeight := ctx.BlockHeight()
 

@@ -32599,6 +32599,8 @@ paths:
                       type: string
                     connectionId:
                       type: string
+                    channelId:
+                      type: string
                     creator:
                       type: string
                     updateInterval:
@@ -32740,6 +32742,8 @@ paths:
                   chainId:
                     type: string
                   connectionId:
+                    type: string
+                  channelId:
                     type: string
                   creator:
                     type: string
@@ -67074,6 +67078,8 @@ definitions:
         type: string
       connectionId:
         type: string
+      channelId:
+        type: string
       creator:
         type: string
       updateInterval:
@@ -67114,6 +67120,8 @@ definitions:
             chainId:
               type: string
             connectionId:
+              type: string
+            channelId:
               type: string
             creator:
               type: string
@@ -67170,6 +67178,8 @@ definitions:
           chainId:
             type: string
           connectionId:
+            type: string
+          channelId:
             type: string
           creator:
             type: string

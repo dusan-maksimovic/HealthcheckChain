@@ -142,6 +142,19 @@ func (im IBCModule) OnChanOpenConfirm(
 	portID,
 	channelID string,
 ) error {
+	monitoredChainID, err := im.keeper.GetCounterpartyChainID(ctx, portID, channelID)
+	if err != nil {
+		return err
+	}
+
+	monitoredChain, found := im.keeper.GetChain(ctx, monitoredChainID)
+	if !found {
+		return sdkerrors.Wrapf(types.ErrChainNotRegistered, "chain with the chain ID %s isn't registered yet", monitoredChainID)
+	}
+
+	monitoredChain.ChannelId = channelID
+	im.keeper.SetChain(ctx, monitoredChain)
+
 	return nil
 }
 
