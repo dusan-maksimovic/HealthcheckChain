@@ -21,9 +21,12 @@ const (
 	// PortID is the default port id that module binds to
 	PortID = "monitored"
 
-	UpdateInterval = 10
+	// each UpdateInterval blocks monitored chain sends its healthcheck update message to registry chain
+	UpdateInterval = 5
 
-	TimeoutInterval = 20
+	MaxUpdateInterval = 10
+
+	MaxTimeoutInterval = 20
 
 	DefaultTimeoutPeriod = 7 * 24 * time.Hour
 )

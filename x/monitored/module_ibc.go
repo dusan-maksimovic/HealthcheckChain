@@ -69,8 +69,8 @@ func (im IBCModule) OnChanOpenInit(
 	// TODO: can move "Intervals" into genesis and store in state, if we want different values for different chains
 	metadata := commontypes.HandshakeMetadata{
 		Version:         version,
-		UpdateInterval:  types.UpdateInterval,
-		TimeoutInterval: types.TimeoutInterval,
+		UpdateInterval:  types.MaxUpdateInterval,
+		TimeoutInterval: types.MaxTimeoutInterval,
 	}
 
 	metadataBz, err := metadata.Marshal()
