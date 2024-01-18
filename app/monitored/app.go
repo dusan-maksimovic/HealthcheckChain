@@ -109,9 +109,10 @@ import (
 	monitoredmodule "healthcheck/x/monitored"
 	monitoredmodulekeeper "healthcheck/x/monitored/keeper"
 	monitoredmoduletypes "healthcheck/x/monitored/types"
+
 	// this line is used by starport scaffolding # stargate/app/moduleImport
 
-	appparams "healthcheck/app/params"
+	appparams "healthcheck/app/monitored/params"
 	"healthcheck/docs"
 )
 

@@ -6,8 +6,8 @@ import (
 	"github.com/cosmos/cosmos-sdk/server"
 	svrcmd "github.com/cosmos/cosmos-sdk/server/cmd"
 
-	"healthcheck/app"
-	"healthcheck/cmd/healthcheckd/cmd"
+	app "healthcheck/app/monitored"
+	"healthcheck/cmd/monitored/cmd"
 )
 
 func main() {
