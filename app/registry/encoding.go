@@ -6,7 +6,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/std"
 	"github.com/cosmos/cosmos-sdk/x/auth/tx"
 
-	"healthcheck/app/params"
+	"healthcheck/app/registry/params"
 )
 
 // makeEncodingConfig creates an EncodingConfig for an amino based test configuration.

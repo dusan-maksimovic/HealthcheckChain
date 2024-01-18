@@ -109,7 +109,7 @@ import (
 
 	// this line is used by starport scaffolding # stargate/app/moduleImport
 
-	appparams "healthcheck/app/params"
+	appparams "healthcheck/app/registry/params"
 	"healthcheck/docs"
 )
 
