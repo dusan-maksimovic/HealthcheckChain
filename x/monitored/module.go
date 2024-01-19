@@ -175,7 +175,7 @@ func HealthcheckUpdatesEndBlock(ctx sdk.Context, keeper keeper.Keeper) {
 	}
 
 	channelID := keeper.GetRegistryChainChannelID(ctx)
-	if channelID == "" {
+	if channelID == "" || !keeper.IsChannelOpen(ctx, channelID) {
 		// IBC channel for sending healthcheck updates isn't established yet
 		return
 	}

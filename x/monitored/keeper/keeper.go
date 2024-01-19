@@ -110,6 +110,15 @@ func (k Keeper) ClaimCapability(ctx sdk.Context, cap *capabilitytypes.Capability
 	return k.scopedKeeper.ClaimCapability(ctx, cap, name)
 }
 
+func (k Keeper) IsChannelOpen(ctx sdk.Context, channelID string) bool {
+	channel, found := k.channelKeeper.GetChannel(ctx, k.GetPort(ctx), channelID)
+	if !found {
+		return false
+	}
+
+	return channel.State == channeltypes.OPEN
+}
+
 func (k Keeper) GetRegistryChainChannelID(ctx sdk.Context) string {
 	store := ctx.KVStore(k.storeKey)
 	return string(store.Get(types.RegistryChainChannelIDKey))

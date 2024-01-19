@@ -170,6 +170,7 @@ func MonitoredChainsUpdateEndBlock(ctx sdk.Context, keeper keeper.Keeper) {
 	keeper.IterateMonitoredChains(ctx, func(monitoredChain types.Chain) (stop bool) {
 		inactivationHeight := monitoredChain.RegistryBlockHeight + monitoredChain.UpdateInterval
 		if monitoredChain.Status == uint64(types.Active) &&
+			monitoredChain.ChannelId != "" &&
 			uint64(currentHeight) > inactivationHeight {
 			monitoredChain.Status = uint64(types.Inactive)
 			keeper.SetChain(ctx, monitoredChain)

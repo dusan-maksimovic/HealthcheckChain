@@ -13,4 +13,5 @@ var (
 	ErrInvalidVersion               = sdkerrors.Register(ModuleName, 1501, "invalid version")
 	ErrInvalidChannelFlow           = sdkerrors.Register(ModuleName, 1502, "invalid message sent to channel end")
 	ErrHealthcheckChannelAlreadySet = sdkerrors.Register(ModuleName, 1503, "channel for sending healthcheck updates is already set")
+	ErrUnexpectedChannelID          = sdkerrors.Register(ModuleName, 1504, "unexpected channel ID")
 )

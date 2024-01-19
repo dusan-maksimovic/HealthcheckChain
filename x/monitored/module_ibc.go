@@ -137,6 +137,14 @@ func (im IBCModule) OnChanCloseConfirm(
 	portID,
 	channelID string,
 ) error {
+	registryChainChannelID := im.keeper.GetRegistryChainChannelID(ctx)
+	if registryChainChannelID != channelID {
+		// should not happen since only one monitored-healthcheck channel is allowed
+		return sdkerrors.Wrap(types.ErrUnexpectedChannelID, fmt.Sprintf("expected: %s, got: %s", registryChainChannelID, channelID))
+	}
+
+	im.keeper.SetRegistryChainChannelID(ctx, "")
+
 	return nil
 }
 
