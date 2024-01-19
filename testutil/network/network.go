@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"healthcheck/app"
+	app "healthcheck/app/registry"
 
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/crypto/hd"

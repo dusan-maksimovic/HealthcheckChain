@@ -90,7 +90,7 @@ func (im IBCModule) OnChanOpenTry(
 		return "", sdkerrors.Wrapf(types.ErrInvalidConnectionHops, "expected only one connection hop.")
 	}
 
-	monitoredChainID, err := im.keeper.GetCounterpartyChainID(ctx, portID, channelID)
+	monitoredChainID, err := im.keeper.GetCounterpartyChainIDFromConnection(ctx, connectionHops[0])
 	if err != nil {
 		return "", err
 	}
@@ -142,7 +142,7 @@ func (im IBCModule) OnChanOpenConfirm(
 	portID,
 	channelID string,
 ) error {
-	monitoredChainID, err := im.keeper.GetCounterpartyChainID(ctx, portID, channelID)
+	monitoredChainID, err := im.keeper.GetCounterpartyChainIDFromChannel(ctx, portID, channelID)
 	if err != nil {
 		return err
 	}
@@ -188,12 +188,12 @@ func (im IBCModule) OnRecvPacket(
 	// this line is used by starport scaffolding # oracle/packet/module/recv
 
 	var modulePacketData commontypes.HealthcheckPacketData
-	if err := modulePacketData.Unmarshal(modulePacket.GetData()); err != nil {
+	if err := types.ModuleCdc.UnmarshalJSON(modulePacket.GetData(), &modulePacketData); err != nil {
 		return channeltypes.NewErrorAcknowledgement(sdkerrors.Wrapf(sdkerrors.ErrUnknownRequest, "cannot unmarshal packet data: %s", err.Error()))
 	}
 
 	// connection ID is checked during handshake, so whatever chain ID is returned here we know it matches the right connection ID
-	chainID, err := im.keeper.GetCounterpartyChainID(ctx, modulePacket.DestinationPort, modulePacket.DestinationChannel)
+	chainID, err := im.keeper.GetCounterpartyChainIDFromChannel(ctx, modulePacket.DestinationPort, modulePacket.DestinationChannel)
 	if err != nil {
 		return channeltypes.NewErrorAcknowledgement(err)
 	}

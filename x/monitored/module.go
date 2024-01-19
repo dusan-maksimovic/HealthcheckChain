@@ -189,7 +189,7 @@ func HealthcheckUpdatesEndBlock(ctx sdk.Context, keeper keeper.Keeper) {
 		},
 	}
 
-	packetData, err := packet.Marshal()
+	packetData, err := types.ModuleCdc.MarshalJSON(&packet)
 	if err != nil {
 		keeper.Logger(ctx).Debug("failed to marshal healthcheck update IBC packet")
 		return

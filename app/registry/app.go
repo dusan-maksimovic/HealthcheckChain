@@ -506,6 +506,8 @@ func New(
 		app.GetSubspace(healthcheckmoduletypes.ModuleName),
 		app.IBCKeeper.ChannelKeeper,
 		&app.IBCKeeper.PortKeeper,
+		app.IBCKeeper.ClientKeeper,
+		app.IBCKeeper.ConnectionKeeper,
 		scopedHealthcheckKeeper,
 	)
 	healthcheckModule := healthcheckmodule.NewAppModule(appCodec, app.HealthcheckKeeper, app.AccountKeeper, app.BankKeeper)
