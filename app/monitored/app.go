@@ -96,6 +96,8 @@ import (
 	ibcporttypes "github.com/cosmos/ibc-go/v6/modules/core/05-port/types"
 	ibchost "github.com/cosmos/ibc-go/v6/modules/core/24-host"
 	ibckeeper "github.com/cosmos/ibc-go/v6/modules/core/keeper"
+	ibctesting "github.com/cosmos/ibc-go/v6/testing"
+	ibctestingtypes "github.com/cosmos/ibc-go/v6/testing/types"
 	"github.com/spf13/cast"
 	abci "github.com/tendermint/tendermint/abci/types"
 	tmjson "github.com/tendermint/tendermint/libs/json"
@@ -117,6 +119,8 @@ const (
 	AccountAddressPrefix = "cosmos"
 	Name                 = "monitored"
 )
+
+var _ ibctesting.TestingApp = (*App)(nil)
 
 // this line is used by starport scaffolding # stargate/wasm/app/enabledProposals
 
@@ -870,6 +874,30 @@ func (app *App) RegisterTendermintService(clientCtx client.Context) {
 // RegisterNodeService implements the Application.RegisterNodeService method.
 func (app *App) RegisterNodeService(clientCtx client.Context) {
 	nodeservice.RegisterNodeService(clientCtx, app.GRPCQueryRouter())
+}
+
+func (app *App) GetBaseApp() *baseapp.BaseApp {
+	return app.BaseApp
+}
+
+// GetStakingKeeper implements the TestingApp interface.
+func (app *App) GetStakingKeeper() ibctestingtypes.StakingKeeper {
+	return app.StakingKeeper
+}
+
+// GetIBCKeeper implements the TestingApp interface.
+func (app *App) GetIBCKeeper() *ibckeeper.Keeper {
+	return app.IBCKeeper
+}
+
+// GetScopedIBCKeeper implements the TestingApp interface.
+func (app *App) GetScopedIBCKeeper() capabilitykeeper.ScopedKeeper {
+	return app.ScopedIBCKeeper
+}
+
+// GetTxConfig implements the TestingApp interface.
+func (app *App) GetTxConfig() client.TxConfig {
+	return MakeEncodingConfig().TxConfig
 }
 
 // GetMaccPerms returns a copy of the module account permissions
